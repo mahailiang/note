@@ -179,7 +179,165 @@ koji --user xxx --password xxx build tagname xxx.src.rpm --nowait --scratch
 
 #### 3.5 fedora下载
 
-## https://archives.fedoraproject.org/pub/archive/fedora/linux/releases/
+​	https://archives.fedoraproject.org/pub/archive/fedora/linux/releases/
+
+#### 3.6 mock配置
+
+1.安装mock
+
+​	从koji服务器下载并安装mock 
+
+2，mock使用方法
+
+mock编译过程最好不要用root身份，先建立一个普通的用户。
+
+3.  配置本地机的/etc/mock/xxx.cfg文件。（配置文件）
+
+例如：test_mips64el.cfg
+
+config_opts['root'] = 'test.cfg'
+
+config_opts['target_arch'] = 'mips64el'
+
+\#config_opts['target_arch'] = 'x86_64'
+
+config_opts['chroot_setup_cmd'] = 'groupinstall build'
+
+config_opts['dist'] = 'ns7_4'
+
+\#config_opts['dist'] = 'nd7'
+
+config_opts['plugin_conf']['ccache_enable'] = False
+
+\##config_opts['plugin_conf']['root_cache_enable'] = False
+
+\##config_opts['plugin_conf']['yum_cache_enable'] = False
+
+ 
+
+config_opts['yum.conf'] = """
+
+[main]
+
+cachedir=/var/cache/yum
+
+debuglevel=1
+
+logfile=/var/log/yum.log
+
+reposdir=/dev/null
+
+retries=20
+
+obsoletes=1
+
+gpgcheck=0
+
+assumeyes=1
+
+ 
+
+\# repos
+
+[local-mock]
+
+name=local-mock
+
+baseurl=file:///var/www/html/repos/origin/
+
+skip_if_unavailable = 1
+
+enabled=1 
+
+[koji]
+
+name=koji
+
+\#baseurl=http://10.1.60.20/kojifiles/repos/ns7.4-build/latest/mips64el/
+
+baseurl=http://10.1.82.10/kojifiles/repos/ns7.4-build/latest/mips64el/
+
+\#baseurl=http://10.1.122.122/kojifiles/repos/nd7-mips64-ty-Release-build/latest/mips64el/
+
+\#baseurl=http://10.1.122.182/kojifiles/repos/nd7-x86-ty-zx-build/latest/x86_64/
+
+\#skip_if_unavailable = 1
+
+enabled=1
+
+ 
+
+ 
+
+"""
+
+ 
+
+\##config_opts['chroothome'] = '/builddir'
+
+\##config_opts['use_host_resolv'] = False
+
+config_opts['basedir'] = '/var/lib/mock'
+
+\##config_opts['rpmbuild_timeout'] = 259200
+
+ 
+
+config_opts['macros']['%_topdir'] = '/builddir/build'
+
+ 
+
+\##config_opts['macros']['%_host'] = 'mips64el-neokylin-linux-gnu'
+
+\##config_opts['macros']['%_host_cpu'] = 'mips64el'
+
+config_opts['macros']['%vendor'] = 'CS2C'
+
+\##config_opts['macros']['%distribution'] = 'Koji'
+
+\##config_opts['macros']['%_rpmfilename'] = '%%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm'
+
+config_opts['macros']['%packager'] = 'NeoKylin Linux'
+
+\##
+
+ 
+
+ 
+
+文件修改完成
+
+ 
+
+[root@test ~]# useradd mockbuilder 
+
+[root@test ~]# usermod -a -G mock mockbuilder 
+
+[root@test ~]# su -  mockbuilder
+
+ 
+
+使用mock配置文件来进行编译
+
+ 
+
+[root@test ~]$ mock -r xxx --init      #初始化，不需要加xxx.cfg后缀
+
+[root@test ~]$ mock -r xxx --rebuild package-1.2-3.src.rpm  #开始搭建环境并编译，使用此命令每次都会清空原有环境，重新搭建编译环境。
+
+[root@test ~]$ mock -r xxx --no-clean --rebuild package-1.2-3.src.rpm  # 不对环境进行清理，检测并安装依赖的包后，进行编译。(此方法配合chroot方法较为方便)
+
+ 
+
+使用chroot的方法进行编译
+
+[root@test ~]# cd /var/lib/mock/xxx/root
+
+[root@test ~]# chroot .	
+
+ 
+
+详见help。
 
 ## 二、git使用
 
@@ -575,6 +733,10 @@ sudo apt-get install build-essential debhelper make autoconf automake dpkg-dev f
 
 
 
+
+
+
+
 这五个是独立的命令，压缩解压都要用到其中一个，可以和别的命令连用但这五个命令只能用其中一个。
 
  
@@ -602,6 +764,12 @@ sudo apt-get install build-essential debhelper make autoconf automake dpkg-dev f
     tar -tf FileName.tar：这条命令是列出FileName.tar包中所有文件，-t是列出文件的意思；
      
     tar -xf FileName.tar：这条命令是解出FileName.tar包中所有文件，-x是解开的意思。
+## 五、洛雪音乐助手
+
+ 项目地址 https://github.com/lyswhut/lx-music-desktop
+
+ DEB包：https://github.com/lyswhut/lx-music-desktop/releases
+
 # C++笔记
 
 ## 一、C++ 存储类
@@ -2329,3 +2497,53 @@ int harpo(int n = 1, int m = 3, int j = 9)  //VALID
 ```
 
 实参按从左到右的顺序依次被赋值给相应的形参，而不能跳过任何参数。
+
+# Qt笔记
+
+## 一、字符串类
+
+1、**+**操作符用于组合两个字符串
+
+```c++
+QString str1 = "Welcome ";
+
+str1 = str1 + "to you!"
+```
+
+2、**+=**用于将一个字符串追加到另一个字符串末尾
+
+```c++
+QString str1 = "Welcome ";
+
+str1 += "to you!"
+```
+
+3、**QString::append()**函数具有与**+=**操作符同样的功能。
+
+4、**QString::sprintf()**,此函数支持的格式定义符和C++中的sprintf()一样。
+
+```c++
+QString str;
+
+str.sprintf("%s","Welcom"); //str="Welcome"
+```
+
+5、**QString::arg()**,相比**QString::sprintf()**，它类型安全，支持Unicode，允许改变%n参数的顺序。
+
+```c++
+QString str;
+
+str = QString("%1 was born in %2.").arg("John").arg(1982);
+
+// str="John was born in 1982."
+```
+
+6、**QString::insert()**函数,在原字符串的特定位置插入另一字符串。
+
+7、**QString::prepend()**函数，在原字符串的开头插入另一字符串。
+
+8、**QString::replace()**函数，用指定的字符串替换原字符串中的某些字符。
+
+9、**QString::trimmed()**函数，移除字符串两端的空白字符。
+
+10、**QString::simplified()**函数，移除字符串两端的空白字符，使用单个空格字符代替字符串中出现的空白字符。
