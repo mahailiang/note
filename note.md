@@ -175,6 +175,9 @@ topurl = https://10.1.82.10/
 
 koji --user xxx --password xxx build tagname xxx.src.rpm --nowait --scratch
 
+3.批量提交
+ls *.src.rpm | xargs -n 1 koji --profile=koji --user=mahailiang --password=mahailiang build cj8  --nowait --scratch
+
 注意：一定要加上--scratch；测试提交的目的在于验证是否能顺利提交
 
 #### 3.5 fedora下载
